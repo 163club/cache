@@ -1,0 +1,33 @@
+# vcs script for connecting to grid.ecel.ufl.edu
+
+GRID_USER="boyi"
+VCS_FOLDER="/home/users/3/boyi/systemverilog/cache/"
+
+GRID_ADDR=$GRID_USER"@grid.ecel.ufl.edu:"
+FULL_ADDR=$GRID_ADDR$VCS_FOLDER
+OUT_FILE=$FULL_ADDR"out"
+
+echo "GRID_ADDR: $GRID_ADDR"
+echo "FULL_ADDR: $FULL_ADDR"
+echo "OUT_FILE: $OUT_FILE"
+
+echo "#####VCS files uploading:#####"
+#rsync -ru *.sv filelist $FULL_ADDR
+scp *.sv filelist boyi@grid.ecel.ufl.edu:/home/users/3/boyi/systemverilog/cache/
+
+echo "#####Finish uploading######"
+echo " "
+echo "#####Run remote script#####"
+#plink boyi@grid.ecel.ufl.edu -m remote-commands
+ssh boyi@grid.ecel.ufl.edu 'bash -s' << 'ENDSSH'
+cd /home/users/3/boyi/systemverilog/cache/
+source /apps/settings
+vcs -sverilog -f filelist -R &> out
+ENDSSH
+echo " "
+echo "####Finish remote script#######"
+echo " "
+echo "#####Downloading out file:#####"
+echo " "
+scp boyi@grid.ecel.ufl.edu:/home/users/3/boyi/systemverilog/cache/out  .
+less out
